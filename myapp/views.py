@@ -10,6 +10,7 @@ from .models import UserProfile
 from .models import PropertyDetails,ProfilePicture
 from .serializers import PropertySerializer,ProfileSerializer
 from rest_framework.parsers import JSONParser
+from django.core.paginator import Paginator
 # Create your views here.
 
 
@@ -21,12 +22,13 @@ def signup(request):
     email = request.data.get("email")
     phone = request.data.get("phone")
     password = request.data.get("password")
+    address = request.data.get("address")
     print(username,email,)
 
-    if username is None or password is None or email is None or phone is None:
-        return JsonResponse({'error': 'Please provide both username , password, phone and email'})
+    if username is None or password is None or email is None or phone is None or address is None:
+        return JsonResponse({'error': 'Please provide  username , password, phone,adress and email'})
     try:
-        UserProfile.objects.create_user(username=username,password=password,email=email,phone=phone)
+        UserProfile.objects.create_user(username=username,password=password,email=email,phone=phone,address=address)
         return JsonResponse({'status': 'success','message':'signup successful'})
     except:
         return JsonResponse({'error': 'User already exists'},status=400)
@@ -73,8 +75,16 @@ def changePassword(request):
 def propertydetails(request):
     if request.method == 'GET':
         propertydetails=PropertyDetails.objects.filter(saleORrent="sale")
-        property_serializer = PropertySerializer(propertydetails,many=True)
-        return JsonResponse(property_serializer.data,safe=False)
+        paginator = Paginator(propertydetails,3)
+        page_no = request.GET.get('page')
+        page_details = paginator.get_page(page_no).object_list
+        property_serializer = PropertySerializer(page_details,many=True)
+        new_serializer_data = list(property_serializer.data)
+        print(paginator.num_pages)
+        pagecount = int(paginator.num_pages)
+        new_serializer_data.append({'pagecount':pagecount})
+    
+        return JsonResponse(new_serializer_data ,safe=False)
     elif request.method == 'POST':
         user=Token.objects.get(key=request.auth.key).user
         
@@ -101,6 +111,8 @@ def propertydetails(request):
         
         phone=user.phone
         email=user.email
+        selleraddress = user.address
+        sellername = user.username
         PropertyDetails.objects.create(
             saleORrent=saleORrent,
             propertytype=propertytype,
@@ -119,7 +131,8 @@ def propertydetails(request):
             description=description,
             latitude=latitude,longitude=longitude,
             phone=phone,
-            email=email
+            email=email,selleraddress=selleraddress,
+            sellername=sellername
         )
         return JsonResponse({"status":"success"})
 
@@ -170,20 +183,62 @@ def profilepicture(request):
 @permission_classes((IsAuthenticated,))
 @api_view(["GET"])
 def rent(request):
+    
     propertydetails=PropertyDetails.objects.filter(saleORrent="rent")
-    property_serializer = PropertySerializer(propertydetails,many=True)
-    return JsonResponse(property_serializer.data,safe=False)
+    paginator = Paginator(propertydetails,3)
+    page_no = request.GET.get('page')
+    page_details = paginator.get_page(page_no).object_list
+    
+    property_serializer = PropertySerializer(page_details,many=True)
+    new_serializer_data = list(property_serializer.data)
+    print(paginator.num_pages)
+    pagecount = int(paginator.num_pages)
+    new_serializer_data.append({'pagecount':pagecount})
+    
+    return JsonResponse(new_serializer_data ,safe=False)
 
 @permission_classes((IsAuthenticated,))
 @api_view(["GET"])
 def readytomove(request):
     propertydetails=PropertyDetails.objects.filter(availability="ready to move")
-    property_serializer = PropertySerializer(propertydetails,many=True)
-    return JsonResponse(property_serializer.data,safe=False)
-
+    paginator = Paginator(propertydetails,3)
+    page_no = request.GET.get('page')
+    page_details = paginator.get_page(page_no).object_list
+    
+    property_serializer = PropertySerializer(page_details,many=True)
+    new_serializer_data = list(property_serializer.data)
+    print(paginator.num_pages)
+    pagecount = int(paginator.num_pages)
+    new_serializer_data.append({'pagecount':pagecount})
+    
+    return JsonResponse(new_serializer_data ,safe=False)
 @permission_classes((IsAuthenticated,))
 @api_view(["GET"])
 def underconstruction(request):
     propertydetails=PropertyDetails.objects.filter(availability="underconstruction")
-    property_serializer = PropertySerializer(propertydetails,many=True)
-    return JsonResponse(property_serializer.data,safe=False)
+    paginator = Paginator(propertydetails,3)
+    page_no = request.GET.get('page')
+    page_details = paginator.get_page(page_no).object_list
+    
+    property_serializer = PropertySerializer(page_details,many=True)
+    new_serializer_data = list(property_serializer.data)
+    print(paginator.num_pages)
+    pagecount = int(paginator.num_pages)
+    new_serializer_data.append({'pagecount':pagecount})
+    
+    return JsonResponse(new_serializer_data ,safe=False)
+
+@permission_classes((IsAuthenticated,))
+@api_view(["GET"])
+def accountdetails(request):
+    user=Token.objects.get(key=request.auth.key).user
+    data={
+        "username" : user.username,
+        "email" : user.email,
+        "phone" : user.phone,
+        "address" : user.address
+    }
+    return JsonResponse(data)
+
+
+

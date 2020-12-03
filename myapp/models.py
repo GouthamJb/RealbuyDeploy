@@ -4,7 +4,7 @@ from django.utils.translation import ugettext_lazy as _
 # Create your models here.
 class UserProfile(AbstractUser):
     phone = models.CharField(_("phone"),max_length=50)
-
+    address = models.CharField(_("address"),max_length=100,default='')
 class PropertyDetails(models.Model):
     saleORrent = models.CharField(max_length=10, blank=False, default='')
     propertytype = models.CharField(max_length=50, blank=False, default='')
@@ -26,6 +26,10 @@ class PropertyDetails(models.Model):
     longitude = models.CharField(max_length=50, default='')
     phone = models.CharField(max_length=50, default='')
     email = models.CharField(max_length=50, default='')
+    selleraddress = models.CharField(max_length=100, default='')
+    sellername = models.CharField(max_length=100,default='')
+    class Meta:
+        ordering =['-id']
     def __str__(self):
         return str(self.id)
 

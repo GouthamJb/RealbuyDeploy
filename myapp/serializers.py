@@ -5,7 +5,7 @@ class PropertySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PropertyDetails
-        fields = ('id','saleORrent','propertytype','propertyphoto','city','address','price','bedroom','bathroom','buildingarea','carpetarea','transcationtype','propertyfloor','totalfloor','ownership','availability','description','latitude','longitude','phone','email')
+        fields = ('id','saleORrent','propertytype','propertyphoto','city','address','price','bedroom','bathroom','buildingarea','carpetarea','transcationtype','propertyfloor','totalfloor','ownership','availability','description','latitude','longitude','phone','email','selleraddress','sellername')
 
 class ProfileSerializer(serializers.ModelSerializer):
 

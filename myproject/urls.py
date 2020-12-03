@@ -30,7 +30,9 @@ urlpatterns = [
     path('api/profilepicture',views.profilepicture),
     path('api/rent',views.rent),
     path('api/readytomove',views.readytomove),
-    path('api/underconstruction',views.underconstruction)
+    path('api/underconstruction',views.underconstruction),
+    path('api/accountdetails',views.accountdetails)
+    
 ]
 urlpatterns +=static(settings.STATIC_URL,document_root=settings.STATIC_ROOT)
 urlpatterns +=static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)

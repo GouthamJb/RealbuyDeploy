@@ -7,10 +7,11 @@ from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny,IsAuthenticated
 from .models import UserProfile
-from .models import PropertyDetails,ProfilePicture
+from .models import PropertyDetails,ProfilePicture,Recent
 from .serializers import PropertySerializer,ProfileSerializer
 from rest_framework.parsers import JSONParser
 from django.core.paginator import Paginator
+from datetime import datetime
 # Create your views here.
 
 
@@ -74,13 +75,22 @@ def changePassword(request):
 @api_view(["POST","GET"])
 def propertydetails(request):
     if request.method == 'GET':
+        user=Token.objects.get(key=request.auth.key).user
         propertydetails=PropertyDetails.objects.filter(saleORrent="sale")
         paginator = Paginator(propertydetails,3)
         page_no = request.GET.get('page')
         page_details = paginator.get_page(page_no).object_list
+        
         property_serializer = PropertySerializer(page_details,many=True)
+        
         new_serializer_data = list(property_serializer.data)
-        print(paginator.num_pages)
+        for i in range(0,len(new_serializer_data)):
+            if(UserProfile.objects.filter(favorites=new_serializer_data[i]['id'],username=user).exists()):
+                 new_serializer_data[i].update({'favorites':True})
+            else:
+                new_serializer_data[i].update({'favorites':False})
+            
+
         pagecount = int(paginator.num_pages)
         new_serializer_data.append({'pagecount':pagecount})
     
@@ -144,9 +154,9 @@ def propertydetails(request):
 @api_view(["POST"])
 def searchdetails(request):
     searchcity = request.data.get('searchcity')
-    print(searchcity)
+    
     searchresult = PropertyDetails.objects.filter(city__icontains=searchcity)
-    print(searchresult)
+    
     search_serializer = PropertySerializer(searchresult,many=True)
     return JsonResponse(search_serializer.data,safe=False)
 
@@ -156,42 +166,47 @@ def searchdetails(request):
 def profilepicture(request):
     if(request.method == "POST"):
         profilepicture = request.data.get('profilepicture')
-        test = request.data.get('test')
-        print(test)
+        
+        
         user=Token.objects.get(key=request.auth.key).user
-        print(user)
-        print(profilepicture)
+        
         if(ProfilePicture.objects.filter(username=user).exists()):
             oldpicture=ProfilePicture.objects.filter(username=user)
             oldpicture.delete()
-            ProfilePicture.objects.create(username= user,profilephoto =  profilepicture )
+            ProfilePicture.objects.create(username= user,profilephoto =  profilepicture ,address=user.address)
             return JsonResponse({"status":"succesfully addded new image"})
         else:
-            ProfilePicture.objects.create(username= user,profilephoto =  profilepicture )
+            ProfilePicture.objects.create(username= user,profilephoto =  profilepicture,address=user.address )
             return JsonResponse({"status":"success"})
 
 
     elif(request.method == "GET"):
         user=Token.objects.get(key=request.auth.key).user
-        print(user)
+        
         pictureresult = ProfilePicture.objects.filter(username=user)
-        print(ProfilePicture.objects.filter(username=user).exists())
-
+        
         picture_serializer = ProfileSerializer(pictureresult,many=True)
-        return JsonResponse(picture_serializer.data,safe=False)
+        new_picture_serializer = list(picture_serializer.data)
+        new_picture_serializer.append({'username':user.username,'address':user.address})
+        return JsonResponse(new_picture_serializer,safe=False)
         
 @permission_classes((IsAuthenticated,))
 @api_view(["GET"])
 def rent(request):
     
     propertydetails=PropertyDetails.objects.filter(saleORrent="rent")
+    user=Token.objects.get(key=request.auth.key).user
     paginator = Paginator(propertydetails,3)
     page_no = request.GET.get('page')
     page_details = paginator.get_page(page_no).object_list
     
     property_serializer = PropertySerializer(page_details,many=True)
     new_serializer_data = list(property_serializer.data)
-    print(paginator.num_pages)
+    for i in range(0,len(new_serializer_data)):
+        if(UserProfile.objects.filter(favorites=new_serializer_data[i]['id'],username=user.username).exists()):
+            new_serializer_data[i].update({'favorites':True})
+        else:
+            new_serializer_data[i].update({'favorites':False})
     pagecount = int(paginator.num_pages)
     new_serializer_data.append({'pagecount':pagecount})
     
@@ -201,13 +216,18 @@ def rent(request):
 @api_view(["GET"])
 def readytomove(request):
     propertydetails=PropertyDetails.objects.filter(availability="ready to move")
+    user=Token.objects.get(key=request.auth.key).user
     paginator = Paginator(propertydetails,3)
     page_no = request.GET.get('page')
     page_details = paginator.get_page(page_no).object_list
     
     property_serializer = PropertySerializer(page_details,many=True)
     new_serializer_data = list(property_serializer.data)
-    print(paginator.num_pages)
+    for i in range(0,len(new_serializer_data)):
+        if(UserProfile.objects.filter(favorites=new_serializer_data[i]['id'],username=user).exists()):
+            new_serializer_data[i].update({'favorites':True})
+        else:
+            new_serializer_data[i].update({'favorites':False})
     pagecount = int(paginator.num_pages)
     new_serializer_data.append({'pagecount':pagecount})
     
@@ -216,13 +236,18 @@ def readytomove(request):
 @api_view(["GET"])
 def underconstruction(request):
     propertydetails=PropertyDetails.objects.filter(availability="underconstruction")
+    user=Token.objects.get(key=request.auth.key).user
     paginator = Paginator(propertydetails,3)
     page_no = request.GET.get('page')
     page_details = paginator.get_page(page_no).object_list
     
     property_serializer = PropertySerializer(page_details,many=True)
     new_serializer_data = list(property_serializer.data)
-    print(paginator.num_pages)
+    for i in range(0,len(new_serializer_data)):
+        if(UserProfile.objects.filter(favorites=new_serializer_data[i]['id'],username=user).exists()):
+            new_serializer_data[i].update({'favorites':True})
+        else:
+            new_serializer_data[i].update({'favorites':False})
     pagecount = int(paginator.num_pages)
     new_serializer_data.append({'pagecount':pagecount})
     
@@ -241,4 +266,76 @@ def accountdetails(request):
     return JsonResponse(data)
 
 
+@permission_classes((IsAuthenticated,))
+@api_view(["GET","POST"])
+def favorite(request):
+    if(request.method=="GET"):
+        user=Token.objects.get(key=request.auth.key).user
+        propertydetails=user.favorites.all()
+        paginator = Paginator(propertydetails,3)
+        page_no = request.GET.get('page')
+        page_details = paginator.get_page(page_no).object_list
+    
+        property_serializer = PropertySerializer(page_details,many=True)
+        new_serializer_data = list(property_serializer.data)
+        
+        for i in range(0,len(new_serializer_data)):
+            if(UserProfile.objects.filter(favorites=new_serializer_data[i]['id']).exists()):
+                new_serializer_data[i].update({'favorites':True})
+            else:
+                new_serializer_data[i].update({'favorites':False})
+        pagecount = int(paginator.num_pages)
+        new_serializer_data.append({'pagecount':pagecount})
+    
+        return JsonResponse(new_serializer_data ,safe=False)
+    
+    elif(request.method=="POST"):
+        propertyId = request.data.get('propertyId')
+        user=Token.objects.get(key=request.auth.key).user
+        propertydetails = PropertyDetails.objects.get(id=propertyId)
+        if(UserProfile.objects.filter(favorites=propertyId).exists()):
+            user.favorites.remove(propertydetails)
+            return JsonResponse({'status':"deleted"})
+        else:
+            user.favorites.add(propertydetails)
+            return JsonResponse({'status':"added"})
 
+@permission_classes((IsAuthenticated,))
+@api_view(["GET","POST"])
+def recent(request):
+    if(request.method=="POST"):
+        propertyId = request.data.get('propertyId')
+        user = Token.objects.get(key=request.auth.key).user
+        date_time = datetime.now()
+        print(date_time)
+        propertydetails = PropertyDetails.objects.get(id=propertyId)
+        if(Recent.objects.filter(username=user.username,PropertyDetails=propertydetails).exists()):
+            recent_data = Recent.objects.get(username=user.username,PropertyDetails=propertydetails)
+            recent_data.datetime=date_time
+            recent_data.save()
+            return JsonResponse({'status':'modified'})
+        else:
+            if(Recent.objects.filter(username=user.username).count()>=9):
+                Recent.objects.filter(username=user.username)[0].delete()
+            
+            Recent.objects.create(username=user.username,PropertyDetails=propertydetails,datetime=date_time)
+            return JsonResponse({'status':'added'})
+    elif(request.method=="GET"):
+        user = Token.objects.get(key=request.auth.key).user
+        propertydetail=PropertyDetails.objects.all().filter(recent__username=user.username).order_by('-recent__datetime')
+        print(propertydetail)
+        paginator = Paginator(propertydetail,3)
+        page_no = request.GET.get('page')
+        page_details = paginator.get_page(page_no).object_list
+    
+        property_serializer = PropertySerializer(page_details,many=True)
+        new_serializer_data = list(property_serializer.data)
+        for i in range(0,len(new_serializer_data)):
+            if(UserProfile.objects.filter(favorites=new_serializer_data[i]['id']).exists()):
+                new_serializer_data[i].update({'favorites':True})
+            else:
+                new_serializer_data[i].update({'favorites':False})
+        pagecount = int(paginator.num_pages)
+        new_serializer_data.append({'pagecount':pagecount})
+    
+        return JsonResponse(new_serializer_data ,safe=False)

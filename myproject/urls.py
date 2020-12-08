@@ -31,7 +31,9 @@ urlpatterns = [
     path('api/rent',views.rent),
     path('api/readytomove',views.readytomove),
     path('api/underconstruction',views.underconstruction),
-    path('api/accountdetails',views.accountdetails)
+    path('api/accountdetails',views.accountdetails),
+    path('api/favorites',views.favorite),
+    path('api/recent',views.recent)
     
 ]
 urlpatterns +=static(settings.STATIC_URL,document_root=settings.STATIC_ROOT)

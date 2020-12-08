@@ -331,7 +331,7 @@ def recent(request):
         property_serializer = PropertySerializer(page_details,many=True)
         new_serializer_data = list(property_serializer.data)
         for i in range(0,len(new_serializer_data)):
-            if(UserProfile.objects.filter(favorites=new_serializer_data[i]['id']).exists()):
+            if(UserProfile.objects.filter(favorites=new_serializer_data[i]['id'],username=user.username).exists()):
                 new_serializer_data[i].update({'favorites':True})
             else:
                 new_serializer_data[i].update({'favorites':False})

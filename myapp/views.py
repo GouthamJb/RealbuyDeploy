@@ -292,8 +292,9 @@ def favorite(request):
     elif(request.method=="POST"):
         propertyId = request.data.get('propertyId')
         user=Token.objects.get(key=request.auth.key).user
+        print(user)
         propertydetails = PropertyDetails.objects.get(id=propertyId)
-        if(UserProfile.objects.filter(favorites=propertyId).exists()):
+        if(UserProfile.objects.filter(favorites=propertyId,username=user.username).exists()):
             user.favorites.remove(propertydetails)
             return JsonResponse({'status':"deleted"})
         else:

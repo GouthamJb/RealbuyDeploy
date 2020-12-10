@@ -173,10 +173,10 @@ def profilepicture(request):
         if(ProfilePicture.objects.filter(username=user).exists()):
             oldpicture=ProfilePicture.objects.filter(username=user)
             oldpicture.delete()
-            ProfilePicture.objects.create(username= user,profilephoto =  profilepicture ,address=user.address)
+            ProfilePicture.objects.create(username= user,profilephoto =  profilepicture)
             return JsonResponse({"status":"succesfully addded new image"})
         else:
-            ProfilePicture.objects.create(username= user,profilephoto =  profilepicture,address=user.address )
+            ProfilePicture.objects.create(username= user,profilephoto =  profilepicture)
             return JsonResponse({"status":"success"})
 
 

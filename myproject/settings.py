@@ -26,7 +26,7 @@ SECRET_KEY = 'vgf^7^pi1leg2d5!l#y^5ev-h%+47)#i_ozfb5l^7&jbhd53qv'
 DEBUG = True
 
 
-ALLOWED_HOSTS = ['192.168.1.4','127.0.0.1']
+ALLOWED_HOSTS = ['192.168.1.4','127.0.0.1','realbuy.herokuapp.com']
 
 
 # Application definition
@@ -47,6 +47,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     
     'corsheaders.middleware.CorsMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
